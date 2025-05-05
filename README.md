@@ -7,7 +7,8 @@ installed. This currently requires sudo to be installed and your user to be a
 sudoer. dock.rb will map most things in your home folder into the container.
 Please look carefully at dock.rb to make sure this fits your requirements.
 
-# This is an opinionated container setup derived from the tt-metalium Ubuntu 22.04
+# Overview
+This is an opinionated container setup derived from the tt-metalium Ubuntu 22.04
 container image. It come with nix pre-installed, as well as a handful of
 packages installed from nix:
 
