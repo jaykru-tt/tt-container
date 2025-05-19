@@ -41,7 +41,7 @@ end
 home_dir = Pathname.new(Dir.home)
 items = [] # Now holds files or directories
 blacklist = []
-dots = [".ssh", ".envrc.template"]
+dots = [/\.ssh/, /\.envrc\.template/, /api/, /hostname/]
 
 begin
   # Iterate over items directly in the home directory
@@ -53,7 +53,7 @@ begin
     if (path.file? || path.directory?) && !path.symlink? && !path.basename.to_s.start_with?('.') && !blacklist.any? { |black| path.basename.to_s.start_with?(black) }
       items << path
     end
-    if dots.any? { |dot| path.basename.to_s.start_with?(dot) }
+    if dots.any? { |dot| dot.match?(path.basename.to_s) }
       items << path
     end
   end

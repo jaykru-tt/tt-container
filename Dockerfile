@@ -70,7 +70,8 @@ RUN git clone https://github.com/jaykru/dotfiles
 RUN cd dotfiles && \
     git submodule update --init --recursive && \
     stow doom && \
-    stow zsh
+    stow zsh && \
+    stow git
 
 # RUN git clone --depth 1 https://github.com/doomemacs/doomemacs ~/.config/emacs
 # RUN ~/.config/emacs/bin/doom install --no-config --env --install --hooks --fonts --force
@@ -78,4 +79,4 @@ RUN cd dotfiles && \
 # Run zsh once to trigger zinit setup
 RUN zsh -ic 'exit'
 
-CMD ["bash"]
+CMD ["zsh"]
