@@ -41,7 +41,7 @@ end
 home_dir = Pathname.new(Dir.home)
 items = [] # Now holds files or directories
 blacklist = []
-dots = [/\.ssh/, /\.envrc\.template/, /api/, /hostname/]
+dots = [/\.ssh/, /\.envrc\.template/, /api/, /hostname/, /claude/, /history/]
 
 begin
   # Iterate over items directly in the home directory
@@ -86,7 +86,7 @@ volume_args = items.map do |host_path|
 end
 
 # --- Main Logic: Attach or Start ---
-image_name = "jaykrutt/tt-dev"
+image_name = ARGV[0] || "jaykrutt/tt-dev"
 if options[:attach]
   # --- Attach Mode (-a) ---
   container_name = DEFAULT_CONTAINER_NAME
@@ -107,6 +107,7 @@ else
  
   # Build the docker run command
   command = ["sudo docker run --name #{container_name} -it --rm"]
+  command += ["--detach-keys=\"ctrl-^\""]
   command += volume_args
   command += ["-v", "/dev/hugepages-1G:/dev/hugepages-1G"]
   command += ["--device", "/dev/tenstorrent"]
