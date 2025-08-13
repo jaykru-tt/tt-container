@@ -7,35 +7,14 @@ require 'securerandom' # For potentially better random selection, though sample 
 
 # --- Configuration ---
 # Base directory inside the container where files/dirs will be mapped
-CONTAINER_BASE_PATH = "/home/j".freeze
-# Default container name for attaching
-DEFAULT_CONTAINER_NAME = "jtainer-new".freeze
-# Path to dictionary file
-DICTIONARY_PATH = "/usr/share/dict/words".freeze # Adjust if needed
+CONTAINER_BASE_PATH = "/home/j/".freeze
 
 # --- Options ---
 options = { attach: false }
 OptionParser.new do |opts|
-  opts.banner = "Usage: dock.rb [options]"
-  opts.on("-a", "--attach", "Attach to the default container (#{DEFAULT_CONTAINER_NAME}) if running") do |a|
-    options[:attach] = a
+  opts.banner = "Usage: dock.rb"
   end
 end.parse!
-
-# --- Helper Functions ---
-def generate_random_name(dict_path)
-  unless File.exist?(dict_path)
-    puts "Error: Dictionary file not found at #{dict_path}. Cannot generate random name."
-    # Fallback or exit? Let's fallback for now, but this might not be ideal.
-    return "#{DEFAULT_CONTAINER_NAME}-#{SecureRandom.hex(3)}"
-  end
-  words = File.readlines(dict_path).map(&:strip).reject { |w| w.length < 4 || w.length > 8 || w.include?("'") || /\A[A-Z]/.match?(w) }
-  if words.length < 2
-     puts "Warning: Dictionary file #{dict_path} has too few suitable words. Using fallback name."
-     return "#{DEFAULT_CONTAINER_NAME}-#{SecureRandom.hex(3)}"
-  end
-  "#{words.sample}-#{words.sample}"
-end
 
 # --- Find Potential Items (Files or Directories, Not Symlinks) ---
 home_dir = Pathname.new(Dir.home)
@@ -86,27 +65,21 @@ volume_args = items.map do |host_path|
 end
 
 # --- Main Logic: Attach or Start ---
-image_name = ARGV[0] || "jaykrutt/tt-dev"
-if options[:attach]
-  # --- Attach Mode (-a) ---
-  container_name = DEFAULT_CONTAINER_NAME
-  attach_cmd = "sudo docker attach #{container_name}"
-  inspect_running = `sudo docker ps --filter "name=^/#{container_name}$" --format "{{.Names}}"`.strip
+image_name = ARGV[0] || "jaykru-tt/dev"
+# --- Attach Mode (-a) ---
+container_name = "jtainer"
+attach_cmd = "sudo docker attach #{container_name}"
+inspect_running = `sudo docker ps --filter "name=^/#{container_name}$" --format "{{.Names}}"`.strip
 
-  if !inspect_running.empty?
-    puts "Attaching to running container '#{container_name}'..."
-    exec(attach_cmd) # exec replaces the current process
-  else
-    puts "Error: Container '#{container_name}' not found or not running. Cannot attach."
-    exit 1 # Exit if attach was requested but container isn't running
-  end
+if !inspect_running.empty?
+  puts "Attaching to running container '#{container_name}'..."
+  exec(attach_cmd) # exec replaces the current process
 else
-  # --- Start New Container Mode --- 
-  container_name = generate_random_name(DICTIONARY_PATH)
-  puts "Generating random container name: #{container_name}"
+  puts "Container '#{container_name}' not found or not running. Starting a new one."
+  puts "Starting container #{container_name}"
  
   # Build the docker run command
-  command = ["sudo docker run --name #{container_name} -it --rm"]
+  command = ["sudo docker run --name #{container_name} -it"]
   command += ["--detach-keys=\"ctrl-^\""]
   command += volume_args
   command += ["-v", "/dev/hugepages-1G:/dev/hugepages-1G"]
@@ -115,11 +88,6 @@ else
   command_str = command.join(" ")
 
   puts "Starting new container '#{container_name}'..."
-  # No need to check/remove stopped containers with random names
   puts "Executing: #{command_str}"
   system(command_str)
 end
-
-# Check if the container exists and is running
-# attach_cmd = "sudo docker attach #{container_name}" # Build later
-# inspect_running = `sudo docker ps --filter "name=^/#{container_name}$" --format "{{.Names}}"`.strip # Check later

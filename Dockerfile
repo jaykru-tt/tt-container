@@ -1,7 +1,7 @@
 # Dockerfile
 
 # July 16th latest; always use hashes to avoid being broken by upstream
-FROM ghcr.io/tenstorrent/tt-metal/tt-metalium/ubuntu-22.04-dev-amd64:909b15b03d575e51eea2fcee573fade23a11f916 
+FROM ghcr.io/tenstorrent/tt-metal/tt-metalium/ubuntu-22.04-dev-amd64:latest
 
 # avoid broken upstream entrypoint >:(
 ENTRYPOINT [] 
@@ -18,6 +18,7 @@ RUN apt-get update \
       curl \
       xz-utils \
       sudo \
+      docker.io \
  && apt-get purge -y openssh-server
 
 # 2) Prepare the Nix store mount point
@@ -33,8 +34,8 @@ SHELL ["/bin/bash", "-lc"]
 
 # add a non‑root user with UID/GID 1001 and give them passwordless sudo
 ARG USERNAME=j
-ARG USER_UID=1001
-ARG USER_GID=1001
+ARG USER_UID=1000
+ARG USER_GID=1000
 RUN groupadd -g ${USER_GID} ${USERNAME} \
  && useradd -m -u ${USER_UID} -g ${USER_GID} -G sudo -s /bin/bash ${USERNAME} \
  && echo "${USERNAME} ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/${USERNAME}
@@ -80,6 +81,8 @@ RUN cd dotfiles && \
 
 # RUN git clone --depth 1 https://github.com/doomemacs/doomemacs ~/.config/emacs
 # RUN ~/.config/emacs/bin/doom install --no-config --env --install --hooks --fonts --force
+
+curl https://cursor.com/install -fsS | bash
 
 # Run zsh once to trigger zinit setup
 RUN zsh -ic 'exit'
