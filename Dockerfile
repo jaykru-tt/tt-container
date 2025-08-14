@@ -34,8 +34,8 @@ SHELL ["/bin/bash", "-lc"]
 
 # add a non‑root user with UID/GID 1001 and give them passwordless sudo
 ARG USERNAME=j
-ARG USER_UID=1000
-ARG USER_GID=1000
+ARG USER_UID
+ARG USER_GID=$USER_UID
 RUN groupadd -g ${USER_GID} ${USERNAME} \
  && useradd -m -u ${USER_UID} -g ${USER_GID} -G sudo -s /bin/bash ${USERNAME} \
  && echo "${USERNAME} ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/${USERNAME}
@@ -77,12 +77,17 @@ RUN cd dotfiles && \
     git submodule update --init --recursive && \
     stow doom && \
     stow zsh && \
-    stow git
+    stow git && \
+    stow claude
 
-# RUN git clone --depth 1 https://github.com/doomemacs/doomemacs ~/.config/emacs
-# RUN ~/.config/emacs/bin/doom install --no-config --env --install --hooks --fonts --force
+RUN ln -s $HOME/host/.litellm-api-key $HOME/.litellm-api-key
+RUN ln -s $HOME/host/.litellm-hostname $HOME/.litellm-hostname
+RUN ln -s $HOME/host/.ssh $HOME/.ssh
 
-curl https://cursor.com/install -fsS | bash
+RUN git clone --depth 1 https://github.com/doomemacs/doomemacs ~/.config/emacs
+RUN ~/.config/emacs/bin/doom install --no-config --env --install --hooks --fonts --force
+
+RUN curl https://cursor.com/install -fsS | bash
 
 # Run zsh once to trigger zinit setup
 RUN zsh -ic 'exit'
