@@ -1,10 +1,20 @@
 # Dockerfile
-
 # July 16th latest; always use hashes to avoid being broken by upstream
 FROM ghcr.io/tenstorrent/tt-metal/tt-metalium/ubuntu-22.04-dev-amd64:latest
 
 # avoid broken upstream entrypoint >:(
 ENTRYPOINT [] 
+
+# add a non‑root user with UID/GID 1001 and give them passwordless sudo
+ARG USERNAME
+ARG USER_UID
+ARG USER_GID=$USER_UID
+ARG HOSTNAME
+
+# Require build args (fail early with a clear message)
+RUN : "${USER_UID:?Build arg USER_UID is required}"
+RUN : "${USERNAME:?Build arg USERNAME is required}"
+RUN : "${HOSTNAME:?Build arg HOSTNAME is required}"
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -27,15 +37,12 @@ RUN apt-get update \
 RUN mkdir -p /etc/nix \
  && printf "experimental-features = nix-command flakes\n" >> /etc/nix/nix.conf
 
-RUN echo "loudbox-n150" > /etc/hostname
+RUN echo "${HOSTNAME}" > /etc/hostname
 
 # 4) Switch to a shell that auto‑sources the nix‑daemon env for all subsequent RUNs
 SHELL ["/bin/bash", "-lc"]
 
-# add a non‑root user with UID/GID 1001 and give them passwordless sudo
-ARG USERNAME=j
-ARG USER_UID
-ARG USER_GID=$USER_UID
+
 RUN groupadd -g ${USER_GID} ${USERNAME} \
  && useradd -m -u ${USER_UID} -g ${USER_GID} -G sudo -s /bin/bash ${USERNAME} \
  && echo "${USERNAME} ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/${USERNAME}
@@ -83,6 +90,8 @@ RUN cd dotfiles && \
 RUN ln -s $HOME/host/.litellm-api-key $HOME/.litellm-api-key
 RUN ln -s $HOME/host/.litellm-hostname $HOME/.litellm-hostname
 RUN ln -s $HOME/host/.ssh $HOME/.ssh
+
+RUN ln -s $HOME/host/.zsh_history $HOME/.zsh_history
 
 RUN git clone --depth 1 https://github.com/doomemacs/doomemacs ~/.config/emacs
 RUN ~/.config/emacs/bin/doom install --no-config --env --install --hooks --fonts --force
