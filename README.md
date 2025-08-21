@@ -1,11 +1,17 @@
 # Usage
-Tweak the Dockerfile as you wish, change the username, etc.
-Build the container: `sudo docker built -t jaykrutt/tt-dev:latest .` from this directory.
+
+## Make your tweaks
+Tweak the Dockerfile as you wish. You might not want my dotfiles for example.
+
+## Build the container.
+ From this directory run this command with appropriate substitutions:
+
+```
+sudo docker build -t jaykrutt/tt-dev --build-arg USERNAME=j --build-arg USER_ID=$UID --build-arg HOSTNAME=$HOSTNAME .
+```
 
 Then you can start up a new instance with `./dock.rb`. Make sure you have docker
-installed. This currently requires sudo to be installed and your user to be a
-sudoer. dock.rb will map most things in your home folder into the container.
-Please look carefully at dock.rb to make sure this fits your requirements.
+installed. This requires that your user be in the `docker` group.
 
 # Overview
 This is an opinionated container setup derived from the tt-metalium Ubuntu 22.04

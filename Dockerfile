@@ -79,6 +79,8 @@ RUN echo node > .nvmrc
 RUN nvm install
 RUN npm install -g @anthropic-ai/claude-code
 
+RUN mkdir -p ~/.config
+
 RUN git clone https://github.com/jaykru/dotfiles
 RUN cd dotfiles && \
     git submodule update --init --recursive && \

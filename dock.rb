@@ -31,8 +31,10 @@ else
   command += ["--detach-keys=\"ctrl-^\""]
   command += ["-v", "#{Dir.home}/dotfiles:/#{CONTAINER_BASE_PATH}/dotfiles"]
   command += ["-v", "#{Dir.home}:#{CONTAINER_BASE_PATH}/host"]
-  command += ["--device", "/dev/tenstorrent"]
   command += [image_name, "tail", "-f", "/dev/null"] # to keep the container running after shell exit
+  if File.exist?("/dev/tenstorrent")
+    command += ["--device", "/dev/tenstorrent"]
+  end
   command_str = command.join(" ")
   success = system(command_str)
   abort("Failed to start container '#{container_name}'.") unless success
